@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antalet Lån</title>
+    <style>
+        body {
+            background: linear-gradient(45deg, #00FF00, #2521fa, #d12efa, #FF0000);
+            background-size: 200% 200%;
+            animation: backgroundMove 60s infinite alternate ease-in-out;
+            color: #FBFFFE;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+}
+
+        @keyframes backgroundMove {
+            0% { background-position: left; }
+            100% { background-position: right; }
+}
+
+        .container {
+            font-size: 500px;
+            font-weight: bold;
+            text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
+            animation: glow 60s infinite alternate ease-in-out;
+        }
+        @keyframes glow {
+            0% {
+                color: #FFFFFF; /* Vit */
+                transform: scale(1);
+    }
+            100% {
+                color: #ffd90094; /* Guld */
+                transform: scale(1.5);
+    }
+}
+
+        .rubrik {
+            margin-top: 0px;
+            margin-bottom: 20px;
+            font-size: 150px;
+
+        }
+        .selector {
+            margin-bottom: 20px;
+        }
+
+        #lastUpdated {
+    transition: opacity 0.8s ease-in-out;
+}
+
+.fade {
+    opacity: 0;
+}
+    </style>
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+    <div class="rubrik">Antal utlån</div>
+    <div class="container" id="loanCount">0</div>
+    <p id="lastUpdated">Senast uppdaterad: Laddar...</p>
+    <script>
+        function updateStats(type) {
+            fetch(`stats.php?type=${type}`)
+                .then(response => response.json())
+                .then(data => {
+                    animateNumber(document.getElementById("loanCount"), data.loans);
+                    updateTimestamp(); //Uppdatera tiden sen senaste uppdatering
+                });
+        }
+
+        function animateNumber(element, number) {
+            let start = 0;
+            let duration = 30000;
+            let step = Math.ceil(number / duration * 50);
+
+            let interval = setInterval(() => {
+                start += step;
+                if (start >= number) {
+                    clearInterval(interval);
+                    element.innerText = number;
+                } else {
+                    element.innerText = start;
+                }
+            }, 100);
+        }
+        function updateTimestamp() {
+    let now = new Date();
+    let timestampElement = document.getElementById("lastUpdated");
+    
+    timestampElement.classList.add("fade");
+    
+    setTimeout(() => {
+        timestampElement.innerText = `Senast uppdaterad: ${now.toLocaleTimeString()}`;
+        timestampElement.classList.remove("fade");
+    }, 500); // Vänta lite innan texten uppdateras
+}
+
+        updateStats('total'); // Ladda standardstatistik vid sidstart
+        updateTimestamp();
+        setInterval(() => updateStats('total'), 3600000); // Uppdatera en gång i timmen
+    </script>
+</body>
+</html>
